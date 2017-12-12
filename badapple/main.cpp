@@ -1,101 +1,123 @@
-#include <iostream>
-#include <opencv2/opencv.hpp>
 #include <windows.h>
+#include <iostream>
+#include <ctime>
+#include <opencv2/opencv.hpp>
 
-using namespace cv;
 using namespace std;
 
-VideoCapture capture;
-const int resize_height = 0.4 * 108;
-const int resize_width = 0.4 * 144 * 5 / 3.0;
-const uint8_t bin_threshold = 120;
-//二值化处理
-void binaryzation(const cv::Mat& src, cv::Mat& dst, uint8_t threshold);
+namespace
+{
+	const float CONSOLE_UNIT_ASPECT_RATIO = 7.0f / 3.0f;
+	const int VIDEO_RESOLUTION[] = { 512, 384 };
+	const float VIDEO_SCALE = 0.42f;
+	const int RESIZE_WIDTH = VIDEO_SCALE * VIDEO_RESOLUTION[0] * CONSOLE_UNIT_ASPECT_RATIO;
+	const int RESIZE_HEIGHT = VIDEO_SCALE * VIDEO_RESOLUTION[1];
+	const int BORDER_SIZE = 10;
+	const uint8_t BIN_THRESHOLD = 120;
+	const char* VIDEO_PATH = "badapple.mp4";
+	const char* PRINT_BLANK = " ";
+	const char* PRINT_NON_BLANK = "@";
+};
 
-//打印当前帧
-void printFrame();
+static void binaryzation(const cv::Mat& vSrc, cv::Mat& voDst, uint8_t vThreshold);
 
-int main() {
+static void printFrame(cv::VideoCapture& vVideoCapture);
+
+//******************************************************************************************************
+//FUNCTION:
+int main()
+{
 	char cmd[128];
-	sprintf(cmd, "mode con cols=%d lines=%d", resize_width + 10, resize_height + 10);
+	sprintf(cmd, "mode con cols=%d lines=%d", RESIZE_WIDTH + BORDER_SIZE, RESIZE_HEIGHT + BORDER_SIZE);
 	system(cmd);
 
-	capture.open("badapple.mp4");
-	if (!capture.isOpened())
-		cout << "视频打开失败!" << endl;
+	cv::VideoCapture videoCapture;
+	videoCapture.open(VIDEO_PATH);
+	if (!videoCapture.isOpened())
+	{
+		cerr << "failed to open the video!" << endl;
+	}
 
-	//获取整个帧数
-	long totalFrameNumber = capture.get(CV_CAP_PROP_FRAME_COUNT);
+	long totalFrameNumber = videoCapture.get(CV_CAP_PROP_FRAME_COUNT);
+	int  frameHeight = videoCapture.get(CV_CAP_PROP_FRAME_HEIGHT);
+	int  frameWidth = videoCapture.get(CV_CAP_PROP_FRAME_WIDTH);
+	double frameRate = videoCapture.get(CV_CAP_PROP_FPS);
 
-	// 获取视频相关信息-帧像素宽高   
-	int  frameHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
-	int  frameWidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
-
-	// 获取视频相关信息-帧率  
-	double frameRate = capture.get(CV_CAP_PROP_FPS);
-
-	int startFrame = 24*10;
+	int startFrame = 0;
 	int endFrame = totalFrameNumber;
 	float fps = frameRate;
-	capture.set(CV_CAP_PROP_POS_FRAMES, startFrame);
+	videoCapture.set(CV_CAP_PROP_POS_FRAMES, startFrame);
 
-	for (int i = startFrame; i <= endFrame; ++i) {
-		printFrame();
-		//getchar();
-		//waitKey(1000 / fps);
+	float deltaMills = 1000.0f / fps;
+	for (int i = startFrame; i <= endFrame; ++i)
+	{
+		clock_t startTime = clock();
+		printFrame(videoCapture);
+		clock_t endTime = clock();
+
+		auto printMills = 1000.0f * (float)(endTime - startTime) / CLOCKS_PER_SEC;
+		cout << printMills << endl;
+		if (printMills < deltaMills)
+			Sleep(deltaMills - printMills);
 	}
 	return 0;
 }
 
-void binaryzation(const cv::Mat& src, cv::Mat& dst, uint8_t threshold) {
-	int nr = src.rows;
-	int nc = src.cols;
-	dst.create(nr, nc, CV_8UC1);
-	for (int i = 0; i < nr; i++) {
-		const uint8_t * dataSrc = src.ptr<uint8_t>(i);
-		uint8_t * dataDst = dst.ptr<uint8_t>(i);
-		for (int j = 0; j < nc; j++) {
-			if (dataSrc[j] >= threshold) {
-				dataDst[j] = 255;
-			}
-			else {
-				dataDst[j] = 0;
-			}
+//******************************************************************************************************
+//FUNCTION:
+void binaryzation(const cv::Mat& vSrc, cv::Mat& voDst, uint8_t vThreshold)
+{
+	int nr = vSrc.rows;
+	int nc = vSrc.cols;
+	voDst.create(nr, nc, CV_8UC1);
+	for (int i = 0; i < nr; ++i)
+	{
+		auto dataSrc = vSrc.ptr<uint8_t>(i);
+		auto dataDst = voDst.ptr<uint8_t>(i);
+		for (int k = 0; k < nc; ++k)
+		{
+			if (dataSrc[k] >= vThreshold)
+				dataDst[k] = 255;
+			else
+				dataDst[k] = 0;
 		}
 	}
 }
 
-void printFrame() {
+//******************************************************************************************************
+//FUNCTION:
+void printFrame(cv::VideoCapture& vVideoCapture)
+{
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	COORD cursorPos = { 0, 0 };
 	SetConsoleCursorPosition(hConsole, cursorPos);
 
-	Mat frame;
-	capture >> frame;
+	cv::Mat frame;
+	vVideoCapture >> frame;
 
-	Mat dst;
-	//imshow("src", frame);
-	cvtColor(frame, frame, CV_RGB2GRAY);
-	//cv::GaussianBlur(frame, frame, cv::Size(5, 5), 0.0);
-	cv::resize(frame, dst, cv::Size(resize_width, resize_height), (0, 0), (0, 0), cv::INTER_LINEAR);
-	binaryzation(dst, dst, bin_threshold);
-	//imshow("dst", dst);
+	cv::Mat dst;
+	cv::cvtColor(frame, frame, CV_RGB2GRAY);
+	cv::resize(frame, dst, cv::Size(RESIZE_WIDTH, RESIZE_HEIGHT), (0, 0), (0, 0), cv::INTER_LINEAR);
+	binaryzation(dst, dst, BIN_THRESHOLD);
 
 	int nr = dst.rows;
 	int nc = dst.cols;
 	uint8_t uMax = 255;
-	string outStr = "";
-	for (int i = 0; i < nr; i++) {
+	string outStr;
+	for (int i = 0; i < nr; ++i)
+	{
 		const uint8_t * data = dst.ptr<uint8_t>(i);
-		for (int j = 0; j < nc; j++) {
-			if (data[j] == uMax) {
-				outStr += "@";
+		for (int k = 0; k < nc; ++k)
+		{
+			if (data[k] == uMax)
+			{
+				outStr += PRINT_NON_BLANK;
 			}
 			else
-				outStr += " ";
+				outStr += PRINT_BLANK;
 		}
 		outStr += "\n";
 	}
 
-	printf("%s", outStr);
+	printf("%s", outStr);	//这里使用printf比cout效率高
 }
