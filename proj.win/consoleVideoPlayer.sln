@@ -5,6 +5,10 @@ VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "consoleVideoPlayer", "consoleVideoPlayer.vcxproj", "{6A9CC2E4-D97F-47F8-B961-DBF5D8DE0633}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{08323672-4109-4C03-83AB-6F03499B9899}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "badapple", "..\examples\badapple\badapple.vcxproj", "{359C0514-0ECB-456C-B2A0-DF37C6D2FCD2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,9 +25,20 @@ Global
 		{6A9CC2E4-D97F-47F8-B961-DBF5D8DE0633}.Release|x64.Build.0 = Release|x64
 		{6A9CC2E4-D97F-47F8-B961-DBF5D8DE0633}.Release|x86.ActiveCfg = Release|Win32
 		{6A9CC2E4-D97F-47F8-B961-DBF5D8DE0633}.Release|x86.Build.0 = Release|Win32
+		{359C0514-0ECB-456C-B2A0-DF37C6D2FCD2}.Debug|x64.ActiveCfg = Debug|x64
+		{359C0514-0ECB-456C-B2A0-DF37C6D2FCD2}.Debug|x64.Build.0 = Debug|x64
+		{359C0514-0ECB-456C-B2A0-DF37C6D2FCD2}.Debug|x86.ActiveCfg = Debug|Win32
+		{359C0514-0ECB-456C-B2A0-DF37C6D2FCD2}.Debug|x86.Build.0 = Debug|Win32
+		{359C0514-0ECB-456C-B2A0-DF37C6D2FCD2}.Release|x64.ActiveCfg = Release|x64
+		{359C0514-0ECB-456C-B2A0-DF37C6D2FCD2}.Release|x64.Build.0 = Release|x64
+		{359C0514-0ECB-456C-B2A0-DF37C6D2FCD2}.Release|x86.ActiveCfg = Release|Win32
+		{359C0514-0ECB-456C-B2A0-DF37C6D2FCD2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{359C0514-0ECB-456C-B2A0-DF37C6D2FCD2} = {08323672-4109-4C03-83AB-6F03499B9899}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FFA7D336-9422-429C-AF4E-E2EF50B1DB7A}
