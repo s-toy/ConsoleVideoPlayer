@@ -60,7 +60,7 @@ static void __printVideoFrame(cv::VideoCapture& vVideoCapture)
 		outStr += "\n";
 	}
 
-	printf("%s", outStr);	//NOTE: 这里使用printf比cout效率高
+	printf("%s", outStr.c_str());	//NOTE: 这里使用printf比cout效率高
 }
 
 //******************************************************************************************************
