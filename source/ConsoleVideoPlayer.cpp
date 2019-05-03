@@ -12,23 +12,6 @@ using namespace cvplayer;
 
 //******************************************************************************************************
 //FUNCTION:
-static void __binaryzation(const cv::Mat& vSrc, cv::Mat& voDst, uint8_t vThreshold)
-{
-	int nr = vSrc.rows;
-	int nc = vSrc.cols;
-	voDst.create(nr, nc, CV_8UC1);
-
-	for (int i = 0; i < nr; ++i)
-	{
-		auto pDataSrc = vSrc.ptr<uint8_t>(i);
-		auto pDataDst = voDst.ptr<uint8_t>(i);
-
-		for (int k = 0; k < nc; ++k) pDataDst[k] = pDataSrc[k] >= vThreshold ? 255 : 0;
-	}
-}
-
-//******************************************************************************************************
-//FUNCTION:
 static void __printVideoFrame(cv::VideoCapture& vVideoCapture)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -38,29 +21,24 @@ static void __printVideoFrame(cv::VideoCapture& vVideoCapture)
 	cv::Mat frame;
 	vVideoCapture >> frame;
 
-	cv::Mat dst;
 	cv::cvtColor(frame, frame, CV_RGB2GRAY);
-	cv::resize(frame, dst, cv::Size(config::RESIZE_WIDTH, config::RESIZE_HEIGHT), (0, 0), (0, 0), cv::INTER_LINEAR);
-	__binaryzation(dst, dst, config::BIN_THRESHOLD);
+	cv::resize(frame, frame, cv::Size(config::RESIZE_WIDTH, config::RESIZE_HEIGHT), (0, 0), (0, 0), cv::INTER_LINEAR);
 
-	int nr = dst.rows;
-	int nc = dst.cols;
-	uint8_t uMax = 255;
-	std::string outStr;
-	for (int i = 0; i < nr; ++i)
+	std::string frameStrBuf;
+	for (int i = 0; i < frame.rows; ++i)
 	{
-		const uint8_t * pData = dst.ptr<uint8_t>(i);
-		for (int k = 0; k < nc; ++k)
+		const uint8_t * pData = frame.ptr<uint8_t>(i);
+		for (int k = 0; k < frame.cols; ++k)
 		{
-			if (pData[k] == uMax)
-				outStr += config::PRINT_NON_BLANK;
+			if (pData[k] > config::BIN_THRESHOLD)
+				frameStrBuf += config::PRINT_NON_BLANK;
 			else
-				outStr += config::PRINT_BLANK;
+				frameStrBuf += config::PRINT_BLANK;
 		}
-		outStr += "\n";
+		frameStrBuf += "\n";
 	}
 
-	printf("%s", outStr.c_str());	//NOTE: 这里使用printf比cout效率高
+	printf("%s", frameStrBuf.c_str());	//NOTE: 这里使用printf比cout效率高
 }
 
 //******************************************************************************************************
